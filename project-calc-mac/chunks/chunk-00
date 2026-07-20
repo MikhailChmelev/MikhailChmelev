@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PROJECT // Универсальный калькулятор лабораторных работ</title>
+<style>
+  :root{
+    --bg:#0a0d12; --panel:#111620; --panel2:#171d28; --line:#293142;
+    --text:#eef2f7; --muted:#9aa6b6; --accent:#d7ff45; --accent2:#64d8ff;
+    --danger:#ff6b7a; --ok:#67e8a5; --warning:#ffc857; --shadow:0 18px 60px rgba(0,0,0,.34);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(circle at 90% -10%,rgba(100,216,255,.09),transparent 35%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  .app{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
+  aside{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);padding:24px 18px;background:rgba(10,13,18,.92);backdrop-filter:blur(18px);overflow:auto}
+  .brand{padding:6px 10px 22px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .brand .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+  .brand h1{font-size:22px;margin:8px 0 5px;letter-spacing:-.04em}
+  .brand p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+  .nav-group{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:#657085;margin:20px 10px 8px}
+  .nav-btn{width:100%;border:1px solid transparent;background:transparent;color:#b9c2cf;text-align:left;padding:11px 12px;border-radius:10px;margin:3px 0;cursor:pointer;transition:.18s;display:flex;gap:10px;align-items:center}
+  .nav-btn:hover{background:var(--panel2);color:white}.nav-btn.active{background:var(--accent);color:#090c10;font-weight:800}
+  .nav-num{width:28px;height:22px;border:1px solid currentColor;border-radius:7px;display:grid;place-items:center;font-size:11px;opacity:.78}
+  main{min-width:0;padding:28px 32px 64px}
+  .topbar{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:24px}
+  .topbar h2{font-size:clamp(25px,3vw,43px);letter-spacing:-.055em;margin:0 0 8px;max-width:980px;line-height:1.04}
+  .topbar p{margin:0;color:var(--muted);max-width:900px;line-height:1.55}
+  .badge{border:1px solid var(--line);background:var(--panel);padding:8px 12px;border-radius:99px;color:var(--muted);font-size:12px;white-space:nowrap}
+  .grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:18px;align-items:start}
+  .card{background:linear-gradient(180deg,rgba(23,29,40,.92),rgba(17,22,32,.96));border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow);min-width:0}
+  .card h3{margin:0 0 4px;font-size:17px}.card>.sub{color:var(--muted);font-size:12px;margin:0 0 18px;line-height:1.5}
+  .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .field{min-width:0}.field.full{grid-column:1/-1}.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#a9b3c2;margin:0 0 6px}
+  input,select,textarea{width:100%;background:#0d121a;border:1px solid #313a4b;color:var(--text);border-radius:9px;padding:10px 11px;outline:none;transition:.15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(100,216,255,.1)}
+  textarea{min-height:95px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+  .btn{border:1px solid var(--line);background:#1b2230;color:white;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700;font-size:13px;transition:.16s}
+  .btn:hover{transform:translateY(-1px);border-color:#475268}.btn.primary{background:var(--accent);color:#080b0f;border-color:var(--accent)}.btn.ghost{background:transparent}.btn.danger{color:var(--danger)}
+  .note{padding:11px 12px;border-left:3px solid var(--accent2);background:rgba(100,216,255,.07);border-radius:7px;color:#c7d1dd;font-size:12px;line-height:1.5;margin:14px 0}
+  .warning{border-left-color:var(--warning);background:rgba(255,200,87,.07)}
+  .result-empty{display:grid;place-items:center;min-height:260px;color:#657085;text-align:center;padding:28px}
+  .result-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:14px}
+  .metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+  .metric{border:1px solid var(--line);background:#0e131c;border-radius:11px;padding:12px}.metric .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.metric .v{font-size:20px;font-weight:800;margin-top:5px;overflow-wrap:anywhere}.metric .u{font-size:11px;color:#79869a;margin-top:3px}
+  .ok{color:var(--ok)}.bad{color:var(--danger)}.warn{color:var(--warning)}
+  table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 7px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}th{color:#8f9bad;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em}th:first-child,td:first-child{text-align:left}
+  .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:13px} .table-wrap table{min-width:640px}.table-wrap th{position:sticky;top:0;background:#151b26;z-index:1}
+  canvas{width:100%;height:320px;background:#0d121a;border:1px solid var(--line);border-radius:12px;margin-top:14px;display:block}
+  details{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;background:#0e131c}summary{cursor:pointer;font-weight:700;font-size:13px}details p,details li{color:#aeb9c7;font-size:12px;line-height:1.6}
+  .formula{font-family:"Times New Roman",serif;font-size:15px;background:#0b1017;padding:9px 11px;border:1px solid var(--line);border-radius:8px;overflow:auto;color:#e9edf3;margin:8px 0}
+  .status{font-size:11px;border-radius:99px;padding:5px 8px;background:#202838;color:#aeb8c7;display:inline-block}.status.exact{color:#06120b;background:var(--ok);font-weight:800}.status.model{color:#161005;background:var(--warning);font-weight:800}
+  .ops-table input{min-width:80px;padding:7px}.ops-table .op-id{min-width:55px}.ops-table .op-dev{min-width:120px}.ops-table .op-deps{min-width:120px}.ops-table button{padding:6px 8px}
+  .footer-tools{position:fixed;right:22px;bottom:20px;display:flex;gap:8px;z-index:5}.footer-tools .btn{box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+  .mobile-toggle{display:none}
+  @media(max-width:1000px){.app{grid-template-columns:1fr}aside{position:fixed;z-index:20;transform:translateX(-105%);transition:.2s;width:290px;box-shadow:var(--shadow)}aside.open{transform:translateX(0)}main{padding:22px 17px 60px}.mobile-toggle{display:inline-flex}.grid{grid-template-columns:1fr}.topbar{align-items:center}.badge{display:none}}
+  @media(max-width:620px){.fields,.metric-grid{grid-template-columns:1fr}.topbar h2{font-size:29px}.card{padding:16px}.footer-tools{right:12px;bottom:12px}.footer-tools .btn:not(.mobile-toggle){display:none}}
+  @media print{aside,.footer-tools,.actions,.no-print{display:none!important}.app{display:block}main{padding:0}.card{box-shadow:none;break-inside:avoid;background:white;color:black;border-color:#ccc}.topbar p,.sub,.note{color:#444}body{background:white;color:black}input,select,textarea{border:1px solid #bbb;color:black;background:white}canvas{border:1px solid #aaa}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="eyebrow">TULSU // RTA</div>
+      <h1>PROJECT // CALC</h1>
+      <p>Универсальный инженерный калькулятор лабораторных работ по проектированию роботов и РТС.</p>
+    </div>
+    <div class="nav-group">Расчётные лабораторные</div>
+    <button class="nav-btn active" data-lab="1"><span class="nav-num">01</span>Геометрический синтез</button>
+    <button class="nav-btn" data-lab="2"><span class="nav-num">02</span>Точностной синтез</button>
+    <button class="nav-btn" data-lab="3"><span class="nav-num">03</span>Синтез жёсткости</button>
+    <button class="nav-btn" data-lab="4"><span class="nav-num">04</span>Прочностной расчёт</button>
+    <button class="nav-btn" data-lab="5"><span class="nav-num">05</span>Моделирование РТК</button>
+    <button class="nav-btn" data-lab="6"><span class="nav-num">06</span>Скорости звеньев</button>
+    <button class="nav-btn" data-lab="9"><span class="nav-num">09</span>Циклограмма сборки</button>
+    <button class="nav-btn" data-lab="13"><span class="nav-num">13</span>Вибробункер</button>
+    <div class="nav-group">Система</div>
+    <button class="nav-btn" data-lab="about"><span class="nav-num">i</span>Справка и допущения</button>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <button class="btn ghost mobile-toggle" onclick="toggleSidebar()">☰ Лаборатории</button>
+        <h2 id="pageTitle">Лабораторная №1. Геометрический синтез</h2>
+        <p id="pageSubtitle">Оптимизация длин звеньев C₁ и C₂ по коэффициенту сервиса в заданной точке рабочей зоны.</p>
+      </div>
+      <span class="badge" id="methodBadge">Формулы 9–10 · стр. 6–9</span>
+    </div>
+    <div id="content"></div>
+  </main>
+</div>
+<div class="footer-tools no-print">
+  <button class="btn mobile-toggle" onclick="toggleSidebar()">☰</button>
+  <button class="btn" onclick="copyResults()">Копировать результат</button>
+  <button class="btn" onclick="window.print()">Печать / PDF</button>
+</div>
+
+<script>
+'use strict';
+const G=9.81, PI=Math.PI;
+const $=id=>document.getElementById(id);
+const n=(id,fallback=NaN)=>{const el=$(id); if(!el)return fallback; const v=parseFloat(String(el.value).replace(',','.')); return Number.isFinite(v)?v:fallback};
+const fmt=(v,d=6)=>Number.isFinite(v)?new Intl.NumberFormat('ru-RU',{maximumFractionDigits:d}).format(v):'—';
+const sci=v=>Number.isFinite(v)?v.toExponential(5).replace('.',','):'—';
+const rad=d=>d*PI/180, deg=r=>r*180/PI;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const esc=s=>String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+const parseNums=s=>String(s||'').split(/[;\n\s]+/).map(x=>parseFloat(x.replace(',','.'))).filter(Number.isFinite);
+const combinations=(arr,k)=>{const out=[]; const rec=(start,cur)=>{if(cur.length===k){out.push(cur.slice());return}for(let i=start;i<arr.length;i++){cur.push(arr[i]);rec(i+1,cur);cur.pop()}};rec(0,[]);return out};
+
+const LAB_META={
+  1:['Лабораторная №1. Геометрический синтез','Оптимизация длин звеньев C₁ и C₂ по коэффициенту сервиса в заданной точке рабочей зоны.','Формулы 9–10 · стр. 6–9'],
+  2:['Лабораторная №2. Точностной синтез','Распределение допустимых погрешностей S₁, S₂, S₃ методом линейного программирования.','Формулы 10–15 · стр. 13–16'],
+  3:['Лабораторная №3. Синтез жёсткости','Подбор сечения звена минимальной массы при ограничении на погрешность позиционирования.','Формулы 19–23 · стр. 21–26'],
+  4:['Лабораторная №4. Прочностное обеспечение','Кинетостатический анализ опоры звена, подшипников и минимального диаметра оси.','Формулы 1–7 · стр. 27–32'],
+  5:['Лабораторная №5. Технико-экономические показатели РТС','Настраиваемая дискретно-событийная модель РТК: производительность, загрузка ресурсов и диаграмма Ганта.','Конечные автоматы · стр. 33–40'],
+  6:['Лабораторная №6. Скорости звеньев ПР','Обработка десяти измерений, максимальная и средняя скорость, сравнение с паспортной.','Методики · стр. 41–46'],
+  9:['Лабораторная №9. Циклограмма сборки','Построение временной циклограммы с параллельными операциями и расчётом длительности цикла.','Циклограмма · стр. 59–62'],
+  13:['Лабораторная №13. Вибрационный бункер','Режим движения детали, критические ускорения, скорость и производительность подачи.','Формулы 2–5 · стр. 84–89'],
+  about:['Справка, ограничения и проверка','Что программа рассчитывает строго по методичке, а где используется настраиваемая инженерная модель.','Версия 1.0 · автономный HTML']
+};
+
+const V1=[
+[-.701,.135,.09],[.620,.340,.09],[.513,.475,.09],[-.380,.590,.09],[.249,.665,.09],[.701,.135,.11],[-.620,.335,.11],[.511,.476,.11],[.778,.591,.11],[-.248,.665,.11],[.701,.135,.13],[.619,.336,.13],[-.509,.477,.13],[.376,.592,.13],[.246,.666,.13],[-.701,.135,.8],[.618,.337,.8],[.507,.478,.8],[-.374,.593,.8],[.244,.666,.8],[.701,.135,.1],[-.617,.337,.1],[.505,.479,.1],[.372,.594,.1],[-.243,.667,.1]
+];
+const V2=[
+[.5,.4,.3,0,.4,-.4,4,2,1],[.5,.4,.3,.3,.1,0,4,3,2],[.5,.4,.3,0,.4,-.4,5,2,1],[.5,.4,.3,.3,.2,0,4,2,1],[.5,.4,.3,0,.4,-.4,4,3,2],
+[.6,.4,.3,.3,.3,0,5,2,1],[.6,.4,.3,0,.4,-.4,4,2,1],[.6,.4,.3,.2,.1,.1,4,3,2],[.6,.4,.3,0,.4,-.4,5,2,1],[.6,.4,.3,.2,.2,.1,4,2,1],
+[.6,.5,.3,0,.4,-.4,4,3,2],[.6,.5,.3,.2,.2,.2,5,2,1],[.6,.5,.3,.2,.1,-.2,4,2,1],[.6,.5,.3,.2,.3,.1,4,3,2],[.6,.5,.3,.2,.1,-.2,5,2,1],
+[.5,.5,.2,.2,0,.2,4,2,1],[.5,.5,.2,.2,.1,-.2,4,3,2],[.5,.5,.2,.2,0,.3,5,2,1],[.5,.5,.2,.2,.1,-.2,4,2,1],[.5,.5,.2,.3,-.3,0,4,3,2],
+[.5,.6,.1,.2,.1,-.2,5,2,1],[.5,.6,.1,.3,-.3,.1,4,2,1],[.5,.6,.1,.2,.1,-.2,4,3,2],[.5,.6,.1,.3,-.3,.2,5,2,1]
+];
+const V3=[
+[1,0,1,3],[.5,0,1,3],[.7,0,1,3],[1,.1,1,3],[.5,.1,1,3],[.7,.1,1,3],[1,.2,1,4],[.5,.2,1,4],[.7,.2,1,4],[1,.3,1,4],[.5,.3,1,4],[.7,.3,1,4],[1,.4,2,3],[.5,.4,2,3],[.7,.4,2,3],[1,.5,2,3],[.5,.5,2,3],[.7,.5,2,3],[1,.6,2,2],[.5,.6,2,2],[.7,.6,2,2],[1,.7,2,2],[.5,.7,2,2],[.7,.7,2,2],[1,.8,2,2]
+];
+const V4=[
+[1,.2,5,6,1,1],[1,.2,5,5,2,1],[1,.2,4,5,1,1],[1,.2,4,5,2,2],[1,.2,4,5,1,2],[1,.1,4,6,2,2],[1,.1,4,6,1,1],[1,.1,3,6,2,1],[1,.1,3,6,1,1],[1,.1,3,5,2,2],[1,.15,3,5,1,2],[1,.15,3,5,2,2],[1,.15,5,5,1,1],[1.2,.15,5,4,2,1],[1.2,.15,5,4,1,1],[1.2,.2,5,4,2,2],[1.2,.2,5,4,1,2],[1.2,.2,4,6,2,2],[1.2,.2,4,6,1,1],[1.2,.2,4,6,2,1],[1.2,.1,4,6,1,1],[1.2,.1,4,5,2,2],[1.2,.1,3,5,1,2],[1.2,.1,3,5,2,2],[1.2,.1,3,5,1,1]
+];
+const V5=[
+[0,.1,12,14,.18,.15,.2,.15,.1,.2],
+[.3,.2,10,17,.16,.14,.17,.12,.11,.2],
+[0,0,15,18,.12,.1,.14,.11,.12,.3]
+];
+
+let currentLab='1', lab5Ops=[], lab9Ops=[], lastResultText='';
+function field(id,label,value,unit='',type='number',extra=''){
+  return `<div class="field"><label for="${id}">${label}${unit?` · ${unit}`:''}</label><input id="${id}" type="${type}" value="${value}" ${extra}></div>`;
+}
+function selectField(id,label,options){return `<div class="field"><label>${label}</label><select id="${id}">${options.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select></div>`}
+function shell(inputs,desc,status='exact'){
+  return `<div class="grid"><section class="card"><div class="result-head"><div><h3>Исходные данные</h3><p class="sub">${desc}</p></div><span class="status ${status}">${status==='exact'?'ПО МЕТОДИЧКЕ':'МОДЕЛЬ'}</span></div>${inputs}</section><section class="card" id="result"><div class="result-empty">Введите данные и запустите расчёт.<br>Система пока подозрительно спокойна.</div></section></div>`;
+}
+function setMeta(lab){const m=LAB_META[lab];$('pageTitle').textContent=m[0];$('pageSubtitle')
