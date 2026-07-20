@@ -1,0 +1,38 @@
+name: Build PROJECT CALC macOS
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apple-silicon:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: project-calc-mac/package-lock.json
+      - name: Assemble application source
+        run: |
+          cat project-calc-mac/chunks/chunk-* > project-calc-mac/index.html
+      - name: Install dependencies
+        working-directory: project-calc-mac
+        run: npm install --no-audit --no-fund
+      - name: Package application
+        working-directory: project-calc-mac
+        run: npx electron-packager . "PROJECT CALC" --platform=darwin --arch=arm64 --electron-version=42.3.0 --out=dist --overwrite --prune=true --asar
+      - name: Create portable ZIP
+        working-directory: project-calc-mac
+        run: ditto -c -k --sequesterRsrc --keepParent "dist/PROJECT CALC-darwin-arm64/PROJECT CALC.app" "PROJECT_CALC_MAC_APPLE_SILICON.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PROJECT-CALC-macOS-Apple-Silicon
+          path: project-calc-mac/PROJECT_CALC_MAC_APPLE_SILICON.zip
+          if-no-files-found: error
+          retention-days: 7
