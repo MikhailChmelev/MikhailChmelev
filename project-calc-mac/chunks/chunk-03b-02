@@ -1,0 +1,6 @@
+rEach((dev,di)=>{const y=18+di*rowH;ctx.fillStyle='#9aa6b6';ctx.fillText(dev,6,y+14);ctx.strokeStyle='#263043';ctx.beginPath();ctx.moveTo(130,y+rowH-2);ctx.lineTo(w-12,y+rowH-2);ctx.stroke();events.filter(e=>e.device===dev).forEach(e=>{const x=130+e.start/maxT*(w-150),ww=Math.max(2,(e.end-e.start)/maxT*(w-150));ctx.fillStyle=colors[di%colors.length];ctx.globalAlpha=.82;ctx.fillRect(x,y,ww,rowH-6);ctx.globalAlpha=1;ctx.fillStyle='#080b0f';if(ww>34)ctx.fillText(`${e.id}${e.cycle?'/'+e.cycle:''}`,x+4,y+14)})});ctx.fillStyle='#8f9bad';ctx.fillText('0',128,h-8);ctx.fillText(fmt(maxT,3),w-45,h-8)}
+
+renderLab();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+id,finishes=Array.from({length:cycles},(_,i)=>fin[`${i+1}:${lastOp}`]),steady=cycles>1?finishes.at(-1)-finishes.at(-2):makespan;return{events,makespan,busy,util,steady,ordered}}
+function opsTableHtml(prefix,ops){return `<div class="table-wrap"><table class="ops-table"><thead><tr><th>ID</th><th>Устройство</th><th>Операция</th><th>Длительность</th><th>Зависит от ID</th><th></th></tr></thead><tbody id="${prefix}tbody">${ops.map((o,i)=>opRow(prefix,o,i)).join('')}</tbody></table></div><div class="actions"><button class="btn" onclick="addOp('${prefix}')">+ Операция</button></div>`}
+function opRow(prefix,o,i){return `<tr data-i="${i}"><td><input class="op-id" value="${esc(o.id)}"></td><td><input class="op-dev" value="${esc(o.device)}"></td><td><input class="op-name" value="${esc(o.name)}"></td><td><input class="op-duration" type="number" step="any" value="${o.duration}"></td><td><input class="op-deps" value="${esc(o.deps.join(','))}" placeholder="A,B"></td><td><button class="btn danger" onclick="removeOp('${prefix}',${i})">×</button></td></tr>`}
+function readOps(prefix){return [...$(`${prefix}tbody`).querySelectorAll('tr')].map(tr=>({id:tr.querySelector('.op-id').value.trim(),device:tr.querySelector('.op-dev').value.trim()||'Ресурс',name:tr.querySelector('.op-name').value.trim()||'Операция',duration:parseFloat(tr.querySelector('.op-duration').value),deps:tr.querySelector('.op-deps').value.split(',').map(s=>s.trim()).filter(Boolean)})).filter(o=>o.id&&Number.isFinite(o.duration)&&o.duration>=0)}
+function addOp(prefix){const arr=prefix==='l5'?lab5Ops:lab9Ops;try{const current=readOps(prefix);current.push({id:String.fromCharCode(65+current.length),device:'Ресурс',name:'Новая операция',duration:.1,deps:[]});if(prefix==='l5')lab5Ops=current;else lab9Ops=current;renderLab()}catch(e){alert(e.message)}}
+function removeOp(prefix,i){const current=readOps(prefix);current.splice(i,1);if(prefix==='l5')lab5Ops=current;else lab9Ops=current;renderLab()}
+function preset5(variant=1){const v=V5[variant-1]||V5[0];return[
+{id:'A',device:'Конвейер заготовок',name:'Подача заготовки',duration:v[0],deps:[]},
+{id:'B',device:'Робот',name:'Переход 1 — рабочий ход',duration:v[4],deps:['A']},
+{id:'C',device:'Робот',name:'Переход 1 — холостой ход',duration:v[5],deps:['B']},
+{id:'D',device:'ТО1',name:'Обработка на ТО1',duration:v[2],deps:['B']},
+{id:'E',device:'Робот',name:'Переход 2 — рабочий ход',duration:v[6],deps:['C','D']},
+{id:'F',device:'Робот',name:'Переход 2 — холостой ход',duration:v[7],deps:['E']},
+{id:'G',device:'ТО2',name:'Обработка на ТО2',duration:v[3],deps:['E']},
+{id:'H',device:'Робот',name:'Переход 3 — рабочий ход',duration:v[8],deps:['F','G']},
+{id:'I',device:'Робот',name:'Переход 3 — холостой ход',duration:v[9],deps:['H']},
+{id:'J',device:'Конвейер деталей',name:'Вывод детали',duration:v[1],deps:['H']}
+]}
+function render5(){if(!lab5Ops.length)lab5Ops=preset5(1);const inputs=`<div class="fields">${selectField('l5variant','Табличный вариант',[[1,'1'],[2,'2'],[3,'3']
