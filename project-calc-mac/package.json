@@ -1,0 +1,11 @@
+{
+  "name": "project-calc-macos",
+  "version": "2.0.0",
+  "private": true,
+  "main": "main.js",
+  "description": "PROJECT CALC desktop application for macOS",
+  "devDependencies": {
+    "electron": "42.3.0",
+    "@electron/packager": "20.0.0"
+  }
+}
